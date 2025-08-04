@@ -1,0 +1,43 @@
+# Rust source and build files
+src/
+target/
+Cargo.lock
+Cargo.toml
+
+# Node modules and locks
+node_modules/
+package-lock.json
+npm-debug.log*
+
+# Development files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build artifacts (keep pkg/ for published package)
+pkg-node/
+!pkg/
+
+# Test and development files
+test-node.mjs
+test-serve.mjs
+test-browser.html
+
+# Git and editor files
+.git/
+.gitignore
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Proof and key files (too large for npm)
+proofs/
+riscv-vks/
