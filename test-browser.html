@@ -184,7 +184,7 @@
     </div>
 
     <script type="module">
-        import init, { main, verify_koalabear } from './pkg-web/pico_wasm_stark_verifier.js';
+        import init, { main, verify_stark } from './pkg-web/pico_wasm_stark_verifier.js';
 
         let wasmModule = null;
         let proofBytes = null;
@@ -299,7 +299,7 @@
                 log(`📊 VK size: ${vkBytes.length.toLocaleString()} bytes`);
 
                 const startTime = performance.now();
-                const result = verify_koalabear(proofBytes, vkBytes);
+                const result = verify_stark('KoalaBear', proofBytes, vkBytes);
                 const endTime = performance.now();
                 const duration = endTime - startTime;
 

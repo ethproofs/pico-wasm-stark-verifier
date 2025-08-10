@@ -16,6 +16,13 @@ use pico_vm::{
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
+#[wasm_bindgen]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+pub enum FieldType {
+    BabyBear,
+    KoalaBear,
+}
+
 // Enable console.log! macro for debugging
 #[wasm_bindgen]
 extern "C" {
@@ -33,7 +40,7 @@ pub fn main() {
     console_error_panic_hook::set_once();
 }
 
-// Serializable wrappers for MetaProof for specific field configurations
+// Serializable wrappers for MetaProof
 #[derive(Serialize, Deserialize)]
 struct SerializableBabyBearMetaProof {
     proofs: Vec<BaseProof<BabyBearPoseidon2>>,
@@ -113,74 +120,76 @@ impl KoalaBearCombineVerifier {
     }
 }
 
-// BabyBear field verification using CombineProver.verify()
-// Expects a single serialized MetaProof and verification key
+// Wrapper function for the pico-vm CombineProver 'verify' function
+// Expects a field type, serialized MetaProof, and verification key
 #[wasm_bindgen]
-pub fn verify_babybear(proof_bytes: &[u8], riscv_vk_bytes: &[u8]) -> Result<bool, JsValue> {
+pub fn verify_stark(
+    field_type: &str,
+    proof_bytes: &[u8],
+    riscv_vk_bytes: &[u8],
+) -> Result<bool, JsValue> {
+    let field_type: FieldType = match field_type {
+        "BabyBear" => FieldType::BabyBear,
+        "KoalaBear" => FieldType::KoalaBear,
+        _ => {
+            return Err(JsValue::from_str(
+                "Invalid field type. Use 'BabyBear' or 'KoalaBear'",
+            ))
+        }
+    };
+
     console_log!(
-        "Starting BabyBear verification with proof size: {}, riscv_vk size: {}",
+        "Starting {:?} verification with proof size: {}, riscv_vk size: {}",
+        field_type,
         proof_bytes.len(),
         riscv_vk_bytes.len()
     );
 
-    // Deserialize the proof wrapper
-    let serializable_proof: SerializableBabyBearMetaProof = bincode::deserialize(proof_bytes)
-        .map_err(|e| JsValue::from_str(&format!("Failed to deserialize proof: {}", e)))?;
+    match field_type {
+        FieldType::BabyBear => {
+            // Deserialize BabyBear proof wrapper
+            let serializable_proof: SerializableBabyBearMetaProof =
+                bincode::deserialize(proof_bytes).map_err(|e| {
+                    JsValue::from_str(&format!("Failed to deserialize BabyBear proof: {}", e))
+                })?;
+            let proof = serializable_proof.to_meta_proof();
 
-    // Convert to MetaProof
-    let proof = serializable_proof.to_meta_proof();
+            // Deserialize BabyBear verification key
+            let riscv_vk: BaseVerifyingKey<BabyBearPoseidon2> =
+                bincode::deserialize(riscv_vk_bytes).map_err(|e| {
+                    JsValue::from_str(&format!(
+                        "Failed to deserialize BabyBear riscv verification key: {}",
+                        e
+                    ))
+                })?;
 
-    // Deserialize the RISCV verification key
-    let riscv_vk: BaseVerifyingKey<BabyBearPoseidon2> = bincode::deserialize(riscv_vk_bytes)
-        .map_err(|e| {
-            JsValue::from_str(&format!(
-                "Failed to deserialize riscv verification key: {}",
-                e
-            ))
-        })?;
+            let verifier = BabyBearCombineVerifier::new();
+            let result = verifier.verify(&proof, &riscv_vk);
+            console_log!("BabyBear verification result: {}", result);
+            Ok(result)
+        }
+        FieldType::KoalaBear => {
+            // Deserialize KoalaBear proof wrapper
+            let serializable_proof: SerializableKoalaBearMetaProof =
+                bincode::deserialize(proof_bytes).map_err(|e| {
+                    JsValue::from_str(&format!("Failed to deserialize KoalaBear proof: {}", e))
+                })?;
+            let proof = serializable_proof.to_meta_proof();
 
-    // Create a combine verifier
-    let verifier = BabyBearCombineVerifier::new();
+            // Deserialize KoalaBear verification key
+            let riscv_vk: BaseVerifyingKey<KoalaBearPoseidon2> =
+                bincode::deserialize(riscv_vk_bytes).map_err(|e| {
+                    JsValue::from_str(&format!(
+                        "Failed to deserialize KoalaBear riscv verification key: {}",
+                        e
+                    ))
+                })?;
 
-    // Perform verification
-    let result = verifier.verify(&proof, &riscv_vk);
-    console_log!("Verification result: {}", result);
-
-    Ok(result)
-}
-
-// KoalaBear field verification using CombineProver.verify()
-// Expects a single serialized MetaProof and verification key
-#[wasm_bindgen]
-pub fn verify_koalabear(proof_bytes: &[u8], riscv_vk_bytes: &[u8]) -> Result<bool, JsValue> {
-    console_log!(
-        "Starting KoalaBear verification with proof size: {}, riscv_vk size: {}",
-        proof_bytes.len(),
-        riscv_vk_bytes.len()
-    );
-
-    // Deserialize the proof wrapper
-    let serializable_proof: SerializableKoalaBearMetaProof = bincode::deserialize(proof_bytes)
-        .map_err(|e| JsValue::from_str(&format!("Failed to deserialize proof: {}", e)))?;
-
-    // Convert to MetaProof
-    let proof = serializable_proof.to_meta_proof();
-
-    // Deserialize the RISCV verification key
-    let riscv_vk: BaseVerifyingKey<KoalaBearPoseidon2> = bincode::deserialize(riscv_vk_bytes)
-        .map_err(|e| {
-            JsValue::from_str(&format!(
-                "Failed to deserialize riscv verification key: {}",
-                e
-            ))
-        })?;
-
-    // Create a combine verifier
-    let verifier = KoalaBearCombineVerifier::new();
-
-    // Perform verification
-    let result = verifier.verify(&proof, &riscv_vk);
-    console_log!("Verification result: {}", result);
-
-    Ok(result)
+            // Create and run verifier
+            let verifier = KoalaBearCombineVerifier::new();
+            let result = verifier.verify(&proof, &riscv_vk);
+            console_log!("KoalaBear verification result: {}", result);
+            Ok(result)
+        }
+    }
 }

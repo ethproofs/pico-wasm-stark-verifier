@@ -19,16 +19,13 @@ npm install @ethproofs/pico-wasm-stark-verifier
 ### React Integration
 
 ```typescript
-import init, {
-  main,
-  verify_koalabear,
-} from '@ethproofs/pico-wasm-stark-verifier';
+import init, { main, verify_stark } from '@ethproofs/pico-wasm-stark-verifier';
 
-await init(); // Initialize WASM
+await init(); // Initialize WASM (if needed)
 main(); // Initialize panic hook
 
 // Verify a proof
-const isValid = verify_koalabear(proofBytes, vkBytes);
+const isValid = verify_stark('KoalaBear', proofBytes, vkBytes);
 ```
 
 For complete React integration examples, see [REACT_INTEGRATION.md](./REACT_INTEGRATION.md).
@@ -36,15 +33,12 @@ For complete React integration examples, see [REACT_INTEGRATION.md](./REACT_INTE
 ### Node.js Usage
 
 ```javascript
-const {
-  main,
-  verify_koalabear,
-} = require('@ethproofs/pico-wasm-stark-verifier');
+const { main, verify_stark } = require('@ethproofs/pico-wasm-stark-verifier');
 
 // The Node.js version initializes automatically
 
 main(); // Initialize panic hook
-const result = verify_koalabear(proofBytes, vkBytes);
+const result = verify_stark('KoalaBear', proofBytes, vkBytes);
 ```
 
 ## Testing

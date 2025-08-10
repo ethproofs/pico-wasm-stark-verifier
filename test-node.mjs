@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-import { main, verify_koalabear } from './pkg-node/pico_wasm_stark_verifier.js';
+import { main, verify_stark } from './pkg-node/pico_wasm_stark_verifier.js';
 
 async function testVerification() {
   console.log('🧪 Testing Pico WASM STARK Verifier\n');
@@ -28,13 +28,13 @@ async function testVerification() {
     // Test KoalaBear verification
     console.log('\n🔍 Verifying KoalaBear proof...');
     const start = performance.now();
-    const kbResult = verify_koalabear(kbProofBytes, kbVkBytes);
+    const kbResult = verify_stark('KoalaBear', kbProofBytes, kbVkBytes);
     const end = performance.now();
     console.log(`✅ KoalaBear verification result: ${kbResult}`);
 
     console.log('\n📊 Verification Summary:');
-    console.log(`  KoalaBear: ${kbResult ? '✅ VALID' : '❌ INVALID'}`);
-    console.log(`Time taken: ${end - start} milliseconds`);
+    console.log(`  STARK proof: ${kbResult ? '✅ VALID' : '❌ INVALID'}`);
+    console.log(`  Time taken: ${end - start} milliseconds`);
   } catch (error) {
     console.error('❌ Error during verification:', error.message);
     console.error('Stack trace:', error.stack);
