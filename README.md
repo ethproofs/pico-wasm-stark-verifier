@@ -28,8 +28,6 @@ main(); // Initialize panic hook
 const isValid = verify_stark('KoalaBear', proofBytes, vkBytes);
 ```
 
-For complete React integration examples, see [REACT_INTEGRATION.md](./REACT_INTEGRATION.md).
-
 ### Node.js Usage
 
 ```javascript
