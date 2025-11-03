@@ -147,49 +147,83 @@ pub fn verify_stark(
 
     match field_type {
         FieldType::BabyBear => {
-            // Deserialize BabyBear proof wrapper
-            let serializable_proof: SerializableBabyBearMetaProof =
-                bincode::deserialize(proof_bytes).map_err(|e| {
-                    JsValue::from_str(&format!("Failed to deserialize BabyBear proof: {}", e))
-                })?;
-            let proof = serializable_proof.to_meta_proof();
-
-            // Deserialize BabyBear verification key
-            let riscv_vk: BaseVerifyingKey<BabyBearPoseidon2> =
-                bincode::deserialize(riscv_vk_bytes).map_err(|e| {
-                    JsValue::from_str(&format!(
-                        "Failed to deserialize BabyBear riscv verification key: {}",
-                        e
-                    ))
-                })?;
-
-            let verifier = BabyBearCombineVerifier::new();
-            let result = verifier.verify(&proof, &riscv_vk);
-            console_log!("BabyBear verification result: {}", result);
-            Ok(result)
+            let result = verify_bb_proof(proof_bytes, riscv_vk_bytes);
+            console_log!("BabyBear verification result: {result:?}");
+            result
         }
         FieldType::KoalaBear => {
-            // Deserialize KoalaBear proof wrapper
-            let serializable_proof: SerializableKoalaBearMetaProof =
-                bincode::deserialize(proof_bytes).map_err(|e| {
-                    JsValue::from_str(&format!("Failed to deserialize KoalaBear proof: {}", e))
-                })?;
-            let proof = serializable_proof.to_meta_proof();
-
-            // Deserialize KoalaBear verification key
-            let riscv_vk: BaseVerifyingKey<KoalaBearPoseidon2> =
-                bincode::deserialize(riscv_vk_bytes).map_err(|e| {
-                    JsValue::from_str(&format!(
-                        "Failed to deserialize KoalaBear riscv verification key: {}",
-                        e
-                    ))
-                })?;
-
-            // Create and run verifier
-            let verifier = KoalaBearCombineVerifier::new();
-            let result = verifier.verify(&proof, &riscv_vk);
-            console_log!("KoalaBear verification result: {}", result);
-            Ok(result)
+            let result = verify_kb_proof(proof_bytes, riscv_vk_bytes);
+            console_log!("KoalaBear verification result: {result:?}");
+            result
         }
+    }
+}
+
+// Verify the BabyBear proof
+fn verify_bb_proof(proof_bytes: &[u8], riscv_vk_bytes: &[u8]) -> Result<bool, JsValue> {
+    // Deserialize BabyBear proof wrapper
+    let serializable_proof: SerializableBabyBearMetaProof = bincode::deserialize(proof_bytes)
+        .map_err(|e| JsValue::from_str(&format!("Failed to deserialize BabyBear proof: {e}")))?;
+    let proof = serializable_proof.to_meta_proof();
+
+    // Deserialize BabyBear verification key
+    let riscv_vk: BaseVerifyingKey<BabyBearPoseidon2> = bincode::deserialize(riscv_vk_bytes)
+        .map_err(|e| {
+            JsValue::from_str(&format!(
+                "Failed to deserialize BabyBear riscv verification key: {e}",
+            ))
+        })?;
+
+    let verifier = BabyBearCombineVerifier::new();
+    let result = verifier.verify(&proof, &riscv_vk);
+    Ok(result)
+}
+
+// Verify the KoalaBear proof
+fn verify_kb_proof(proof_bytes: &[u8], riscv_vk_bytes: &[u8]) -> Result<bool, JsValue> {
+    // Deserialize KoalaBear proof wrapper
+    let serializable_proof: SerializableKoalaBearMetaProof = bincode::deserialize(proof_bytes)
+        .map_err(|e| JsValue::from_str(&format!("Failed to deserialize KoalaBear proof: {e}")))?;
+    let proof = serializable_proof.to_meta_proof();
+
+    // Deserialize KoalaBear verification key
+    let riscv_vk: BaseVerifyingKey<KoalaBearPoseidon2> = bincode::deserialize(riscv_vk_bytes)
+        .map_err(|e| {
+            JsValue::from_str(&format!(
+                "Failed to deserialize KoalaBear riscv verification key: {e}",
+            ))
+        })?;
+
+    // Create and run verifier
+    let verifier = KoalaBearCombineVerifier::new();
+    let result = verifier.verify(&proof, &riscv_vk);
+    Ok(result)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use anyhow::{anyhow, Result};
+    use std::{env, fs};
+
+    // RiscV VK for Pico Prism
+    const PICO_PRISM_KB_VK_FILE_PATH: &str = "riscv-vks/pico-prism-vk-kb.bin";
+
+    // Test Pico Prism proof downloading from eth-proofs:
+    // <https://ethproofs.org/clusters/79041a5b-ee8d-49b3-8207-86c7debf8e13>
+    const PICO_PRISM_TEST_PROOF_FILE_PATH: &str = "proofs/pico-prism-eth-proof.bin";
+
+    #[test]
+    fn test_pico_prism_vk() -> Result<()> {
+        env::set_var("VK_VERIFICATION", "false");
+
+        let vk: Vec<u8> = fs::read(PICO_PRISM_KB_VK_FILE_PATH)?;
+        let proof: Vec<u8> = fs::read(PICO_PRISM_TEST_PROOF_FILE_PATH)?;
+
+        let is_verified = verify_kb_proof(&proof, &vk)
+            .map_err(|e| anyhow!("Failed to verify KoalaBear proof: {e:?}"))?;
+        assert!(is_verified, "Cannot verify KoalaBear proof");
+
+        Ok(())
     }
 }
