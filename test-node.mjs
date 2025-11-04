@@ -15,8 +15,12 @@ async function testVerification() {
     console.log('✅ WASM module initialized\n');
 
     // Load KoalaBear proof and verification key
-    const kbProofPath = path.join(__dirname, 'proofs', 'pico-eth-proof.bin');
-    const kbVkPath = path.join(__dirname, 'riscv-vks', 'pico-vk-kb.bin');
+    const kbProofPath = path.join(
+      __dirname,
+      'proofs',
+      'pico-prism-eth-proof.bin'
+    );
+    const kbVkPath = path.join(__dirname, 'riscv-vks', 'pico-prism-vk-kb.bin');
 
     console.log('\nLoading KoalaBear proof and verification key...');
     const kbProofBytes = fs.readFileSync(kbProofPath);
@@ -28,7 +32,7 @@ async function testVerification() {
     // Test KoalaBear verification
     console.log('\n🔍 Verifying KoalaBear proof...');
     const start = performance.now();
-    const kbResult = verify_stark('Pico', kbProofBytes, kbVkBytes);
+    const kbResult = verify_stark('PicoPrism', kbProofBytes, kbVkBytes);
     const end = performance.now();
     console.log(`✅ KoalaBear verification result: ${kbResult}`);
 
