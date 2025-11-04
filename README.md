@@ -24,8 +24,11 @@ import init, { main, verify_stark } from '@ethproofs/pico-wasm-stark-verifier';
 await init(); // Initialize WASM (if needed)
 main(); // Initialize panic hook
 
-// Verify a proof
-const isValid = verify_stark('KoalaBear', proofBytes, vkBytes);
+// Verify a Pico proof (single GPU)
+const isValid = verify_stark('Pico', proofBytes, vkBytes);
+
+// Verify a Pico Prism proof (multi GPUs)
+const isValid = verify_stark('PicoPrism', proofBytes, vkBytes);
 ```
 
 For complete React integration examples, see [REACT_INTEGRATION.md](./REACT_INTEGRATION.md).
@@ -38,7 +41,7 @@ const { main, verify_stark } = require('@ethproofs/pico-wasm-stark-verifier');
 // The Node.js version initializes automatically
 
 main(); // Initialize panic hook
-const result = verify_stark('KoalaBear', proofBytes, vkBytes);
+const result = verify_stark('PicoPrism', proofBytes, vkBytes);
 ```
 
 ## Testing

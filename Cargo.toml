@@ -9,11 +9,8 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-# TODO:
-# fix this dependency to `ethproofs/pico` and make it build with rust `nightly-2025-08-04`
-# if we want to support both old pico and prism in this repo
-# pico-vm = { git = "https://github.com/ethproofs/pico.git", package = "pico-vm", branch = "wasm-stark-verifier" }
-pico-vm = { git = "https://github.com/brevis-network/pico.git" }
+pico-vm = { git = "https://github.com/brevis-network/pico.git", branch = "ethproofs-pico" }
+pico-prism-vm = { git = "https://github.com/brevis-network/pico.git", package = "pico-vm", branch = "main" }
 
 # Wasm bindings
 wasm-bindgen = "0.2"
