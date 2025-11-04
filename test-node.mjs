@@ -16,7 +16,7 @@ async function testVerification() {
 
     // Load KoalaBear proof and verification key
     const kbProofPath = path.join(__dirname, 'proofs', 'pico-eth-proof.bin');
-    const kbVkPath = path.join(__dirname, 'riscv-vks', 'reth-riscv-vk-kb.bin');
+    const kbVkPath = path.join(__dirname, 'riscv-vks', 'pico-vk-kb.bin');
 
     console.log('\nLoading KoalaBear proof and verification key...');
     const kbProofBytes = fs.readFileSync(kbProofPath);
@@ -28,7 +28,7 @@ async function testVerification() {
     // Test KoalaBear verification
     console.log('\n🔍 Verifying KoalaBear proof...');
     const start = performance.now();
-    const kbResult = verify_stark('KoalaBear', kbProofBytes, kbVkBytes);
+    const kbResult = verify_stark('Pico', kbProofBytes, kbVkBytes);
     const end = performance.now();
     console.log(`✅ KoalaBear verification result: ${kbResult}`);
 
