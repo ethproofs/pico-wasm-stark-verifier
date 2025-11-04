@@ -41,7 +41,7 @@ const { main, verify_stark } = require('@ethproofs/pico-wasm-stark-verifier');
 // The Node.js version initializes automatically
 
 main(); // Initialize panic hook
-const result = verify_stark('KoalaBear', proofBytes, vkBytes);
+const result = verify_stark('PicoPrism', proofBytes, vkBytes);
 ```
 
 ## Testing
