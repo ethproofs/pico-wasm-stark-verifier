@@ -87,12 +87,35 @@ mod tests {
     // <https://ethproofs.org/clusters/79041a5b-ee8d-49b3-8207-86c7debf8e13>
     const PICO_PRISM_TEST_PROOF_FILE_PATH: &str = "proofs/pico-prism-eth-proof.bin";
 
+    // RiscV VK for Pico Prism of simple 5090
+    const PICO_PRISM_SIMPLE_5090_KB_VK_FILE_PATH: &str =
+        "riscv-vks/pico-prism-simple-5090-vk-kb.bin";
+
+    // Test Pico Prism proof downloading from eth-proofs:
+    // <https://ethproofs.org/clusters/a417ab66-2902-43e0-9611-0d4c77872775>
+    const PICO_PRISM_SIMPLE_5090_TEST_PROOF_FILE_PATH: &str =
+        "proofs/pico-prism-simple-5090-eth-proof.bin";
+
     #[test]
     fn test_pico_prism_verification() -> Result<()> {
         env::set_var("VK_VERIFICATION", "false");
 
         let vk: Vec<u8> = fs::read(PICO_PRISM_KB_VK_FILE_PATH)?;
         let proof: Vec<u8> = fs::read(PICO_PRISM_TEST_PROOF_FILE_PATH)?;
+
+        let is_verified = verify_kb_proof(&proof, &vk)
+            .map_err(|e| anyhow!("Failed to verify KoalaBear proof: {e:?}"))?;
+        assert!(is_verified, "Cannot verify KoalaBear proof");
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_pico_prism_simple_5090_verification() -> Result<()> {
+        env::set_var("VK_VERIFICATION", "false");
+
+        let vk: Vec<u8> = fs::read(PICO_PRISM_SIMPLE_5090_KB_VK_FILE_PATH)?;
+        let proof: Vec<u8> = fs::read(PICO_PRISM_SIMPLE_5090_TEST_PROOF_FILE_PATH)?;
 
         let is_verified = verify_kb_proof(&proof, &vk)
             .map_err(|e| anyhow!("Failed to verify KoalaBear proof: {e:?}"))?;
