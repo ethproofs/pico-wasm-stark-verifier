@@ -9,7 +9,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-pico-vm = { git = "https://github.com/brevis-network/pico.git", branch = "ethproofs-pico" }
+pico-vm = { git = "https://github.com/brevis-network/pico.git", branch = "ethproofs-pico-v1.3.0" }
 # pico-prism-vm = { git = "https://github.com/brevis-network/pico.git", package = "pico-vm", branch = "main" }
 pico-prism-vm = { git = "https://github.com/ethproofs/pico.git", package = "pico-vm", branch = "ethproofs-pico-prism" }
 
