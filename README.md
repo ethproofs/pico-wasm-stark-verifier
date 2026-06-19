@@ -31,8 +31,6 @@ const isValid = verify_stark('Pico', proofBytes, vkBytes);
 const isValid = verify_stark('PicoPrism', proofBytes, vkBytes);
 ```
 
-For complete React integration examples, see [REACT_INTEGRATION.md](./REACT_INTEGRATION.md).
-
 ### Node.js Usage
 
 ```javascript
