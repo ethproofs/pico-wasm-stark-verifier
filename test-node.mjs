@@ -7,43 +7,57 @@ const __dirname = path.dirname(__filename);
 
 import { main, verify_stark } from './pkg-node/pico_wasm_stark_verifier.js';
 
+// Every proof here is a real ethproofs block proof and must verify.
+const CASES = [
+  {
+    name: 'Pico (FRI, single GPU)',
+    vmType: 'Pico',
+    proof: 'pico-eth-proof.bin',
+    vk: 'pico-vk-kb.bin',
+  },
+  {
+    name: 'Pico Prism (FRI, multi GPUs)',
+    vmType: 'PicoPrism',
+    proof: 'pico-prism-eth-proof.bin',
+    vk: 'pico-prism-vk-kb.bin',
+  },
+  {
+    // Shares the 'Pico' type; the verifier recognizes the proof format by its magic.
+    name: 'Pico 3.0 (MLE)',
+    vmType: 'Pico',
+    proof: 'pico-mle-eth-proof.bin',
+    vk: 'pico-mle-vk-kb.bin',
+  },
+];
+
 async function testVerification() {
   console.log('🧪 Testing Pico WASM STARK Verifier\n');
 
-  try {
-    main();
-    console.log('✅ WASM module initialized\n');
+  main();
+  console.log('✅ WASM module initialized\n');
 
-    // Load KoalaBear proof and verification key
-    const kbProofPath = path.join(
-      __dirname,
-      'proofs',
-      'pico-prism-eth-proof.bin'
-    );
-    const kbVkPath = path.join(__dirname, 'riscv-vks', 'pico-prism-vk-kb.bin');
+  let failed = 0;
+  for (const c of CASES) {
+    const proofBytes = fs.readFileSync(path.join(__dirname, 'proofs', c.proof));
+    const vkBytes = fs.readFileSync(path.join(__dirname, 'riscv-vks', c.vk));
+    console.log(`🔍 ${c.name}: proof ${proofBytes.length} bytes, VK ${vkBytes.length} bytes`);
 
-    console.log('\nLoading KoalaBear proof and verification key...');
-    const kbProofBytes = fs.readFileSync(kbProofPath);
-    const kbVkBytes = fs.readFileSync(kbVkPath);
-
-    console.log(`  Proof size: ${kbProofBytes.length} bytes`);
-    console.log(`  VK size: ${kbVkBytes.length} bytes`);
-
-    // Test KoalaBear verification
-    console.log('\n🔍 Verifying KoalaBear proof...');
     const start = performance.now();
-    const kbResult = verify_stark('PicoPrism', kbProofBytes, kbVkBytes);
-    const end = performance.now();
-    console.log(`✅ KoalaBear verification result: ${kbResult}`);
-
-    console.log('\n📊 Verification Summary:');
-    console.log(`  STARK proof: ${kbResult ? '✅ VALID' : '❌ INVALID'}`);
-    console.log(`  Time taken: ${end - start} milliseconds`);
-  } catch (error) {
-    console.error('❌ Error during verification:', error.message);
-    console.error('Stack trace:', error.stack);
-    process.exit(1);
+    let result;
+    try {
+      result = verify_stark(c.vmType, proofBytes, vkBytes);
+    } catch (error) {
+      result = false;
+      console.error(`   ❌ Error: ${error?.message ?? error}`);
+    }
+    const ms = Math.round(performance.now() - start);
+    console.log(`   ${result ? '✅ VALID' : '❌ INVALID'} in ${ms} milliseconds\n`);
+    if (!result) failed += 1;
   }
+
+  console.log('📊 Verification Summary:');
+  console.log(`  ${CASES.length - failed}/${CASES.length} proofs verified`);
+  if (failed) process.exit(1);
 }
 
 testVerification();
