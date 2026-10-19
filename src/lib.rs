@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 mod pico;
+mod pico_mle;
 mod pico_prism;
 
 #[wasm_bindgen]
@@ -54,6 +55,13 @@ pub fn verify_stark(
     );
 
     match vm_type {
+        // A Pico 3.0 proof shares the "Pico" type with the FRI proofs and is told apart by the
+        // magic it starts with; FRI proofs are bincode and never do.
+        VMType::Pico if pico_mle::is_mle_proof(proof_bytes) => {
+            let result = pico_mle::verify_proof(proof_bytes, riscv_vk_bytes);
+            console_log!("Pico 3.0 verification result: {result:?}");
+            result
+        }
         VMType::Pico => {
             let result = pico::verify_kb_proof(proof_bytes, riscv_vk_bytes);
             console_log!("Pico single GPU verification result: {result:?}");
