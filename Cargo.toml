@@ -15,6 +15,10 @@ pico-prism-vm = { git = "https://github.com/ethproofs/pico.git", package = "pico
 # Pico 3.0 (MLE/WHIR), see src/pico_mle.rs.
 pico-mle-vm = { git = "https://github.com/brevis-network/pico.git", package = "pico-vm", tag = "v3.0.0", default-features = false }
 pico-mle-core = { git = "https://github.com/brevis-network/pico.git", tag = "v3.0.0", default-features = false }
+# Pico 3.1 compress proofs, see src/pico_mle_compress.rs. Without default features: no rayon, and no
+# `codec` feature, which builds zstd's C library.
+pico-verifier = { git = "https://github.com/brevis-network/pico.git", tag = "v3.1.2", default-features = false }
+pico-mle-core-31 = { git = "https://github.com/brevis-network/pico.git", package = "pico-mle-core", tag = "v3.1.2", default-features = false }
 
 # Wasm bindings
 wasm-bindgen = "0.2"

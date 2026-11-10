@@ -38,10 +38,10 @@ use pico_mle_vm::{
 use serde::{de::DeserializeOwned, Deserialize};
 use wasm_bindgen::prelude::*;
 
-const PROOF_MAGIC: [u8; 8] = *b"PICOMLE\0";
+pub(crate) const PROOF_MAGIC: [u8; 8] = *b"PICOMLE\0";
 const PROOF_VERSION: u32 = 3;
-const VK_MAGIC: [u8; 8] = *b"PICOMLEV";
-const VK_VERSION: u32 = 2;
+pub(crate) const VK_MAGIC: [u8; 8] = *b"PICOMLEV";
+pub(crate) const VK_VERSION: u32 = 2;
 
 /// Bounds what hostile bytes can make the verifier allocate, in the zstd stream and in every
 /// bincode length prefix. A real proof body is under 1 MB and a VK bundle about 20 KB.
@@ -58,23 +58,23 @@ struct ProofV3 {
 
 /// What a cluster version's VK holds.
 #[derive(Deserialize)]
-struct VkBundleV2 {
+pub(crate) struct VkBundleV2 {
     /// The guest identity: program commitment (8), entry pc (3), and the initial global
     /// cumulative sum's x (7) and y (7), as canonical u32s.
-    vm_vk: Vec<u32>,
+    pub(crate) vm_vk: Vec<u32>,
     /// The whitelist root.
-    vk_root: [u32; 8],
+    pub(crate) vk_root: [u32; 8],
     /// The keys a root proof can be proved under, with their paths to `vk_root`.
-    members: Vec<MemberV2>,
+    pub(crate) members: Vec<MemberV2>,
 }
 
 #[derive(Deserialize)]
-struct MemberV2 {
-    pre_hash: [u32; 8],
-    merged_commit: [u32; 8],
-    index: u32,
+pub(crate) struct MemberV2 {
+    pub(crate) pre_hash: [u32; 8],
+    pub(crate) merged_commit: [u32; 8],
+    pub(crate) index: u32,
     /// One sibling per tree level, bottom-up.
-    siblings: Vec<[u32; 8]>,
+    pub(crate) siblings: Vec<[u32; 8]>,
 }
 
 pub(crate) fn is_mle_proof(bytes: &[u8]) -> bool {
@@ -122,7 +122,7 @@ fn verify_decoded(bundle: &VkBundleV2, body: &ProofV3) -> Result<(), String> {
 }
 
 /// The inverse of the prover's framing, bounded against hostile input.
-fn unframe<T: DeserializeOwned>(
+pub(crate) fn unframe<T: DeserializeOwned>(
     bytes: &[u8],
     magic: &[u8; 8],
     version: u32,
@@ -130,7 +130,7 @@ fn unframe<T: DeserializeOwned>(
 ) -> Result<T, String> {
     let rest = bytes
         .strip_prefix(magic.as_slice())
-        .ok_or_else(|| format!("{what}: not a Pico 3.0 {what}"))?;
+        .ok_or_else(|| format!("{what}: not a Pico MLE {what}"))?;
     let (v, mut body) = rest
         .split_at_checked(4)
         .ok_or_else(|| format!("{what}: truncated"))?;
@@ -156,7 +156,7 @@ fn unframe<T: DeserializeOwned>(
 
 /// bincode as the prover's `bincode::serialize` writes it (fixed-width integers), with every
 /// length prefix checked against [`MAX_BODY`] before anything is allocated.
-fn bincode_capped() -> impl Options {
+pub(crate) fn bincode_capped() -> impl Options {
     bincode::DefaultOptions::new()
         .with_fixint_encoding()
         .with_limit(MAX_BODY)
