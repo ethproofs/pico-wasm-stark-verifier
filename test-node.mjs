@@ -28,6 +28,13 @@ const CASES = [
     proof: 'pico-mle-eth-proof.bin',
     vk: 'pico-mle-vk-kb.bin',
   },
+  {
+    // Also 'Pico': the Pico 3.0 magic with format version 4.
+    name: 'Pico 3.1 (MLE compress)',
+    vmType: 'Pico',
+    proof: 'pico-mle-compress-eth-proof.bin',
+    vk: 'pico-mle-compress-vk-kb.bin',
+  },
 ];
 
 async function testVerification() {
