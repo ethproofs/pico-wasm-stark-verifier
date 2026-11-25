@@ -19,6 +19,10 @@ pico-mle-core = { git = "https://github.com/brevis-network/pico.git", tag = "v3.
 # `codec` feature, which builds zstd's C library.
 pico-verifier = { git = "https://github.com/brevis-network/pico.git", tag = "v3.1.2", default-features = false }
 pico-mle-core-31 = { git = "https://github.com/brevis-network/pico.git", package = "pico-mle-core", tag = "v3.1.2", default-features = false }
+# Compress proofs in format version 5, see src/pico_mle_compress_v5.rs: the same crates from Pico's
+# v3.2.0 tag, without default features as for 3.1.
+pico-verifier-v5 = { git = "https://github.com/brevis-network/pico.git", package = "pico-verifier", tag = "v3.2.0", default-features = false }
+pico-mle-core-v5 = { git = "https://github.com/brevis-network/pico.git", package = "pico-mle-core", tag = "v3.2.0", default-features = false }
 
 # Wasm bindings
 wasm-bindgen = "0.2"

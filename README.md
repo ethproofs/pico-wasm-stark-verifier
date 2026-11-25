@@ -6,12 +6,13 @@ WebAssembly bindings for the Pico STARK verifier.
 
 This module compiles the `verify` function from `pico-vm`'s `CombineProver` to WebAssembly, allowing STARK proof verification in web browsers and Node.js environments.
 
-It verifies four kinds of Pico proofs:
+It verifies five kinds of Pico proofs:
 
 - Pico (FRI, single GPU), under the `'Pico'` type
 - Pico Prism (FRI, multiple GPUs), under the `'PicoPrism'` type
 - Pico 3.0 (MLE), also under the `'Pico'` type; see [Pico 3.0 (MLE) proofs](#pico-30-mle-proofs)
 - Pico 3.1 (MLE compress), also under the `'Pico'` type; see [Pico 3.1 compress proofs](#pico-31-compress-proofs)
+- MLE compress proofs in format version 5, from Pico 3.2, also under the `'Pico'` type; see [Compress proofs, format version 5](#compress-proofs-format-version-5)
 
 For the Pico STARK verifier to work, the env variable `VK_VERIFICATION` needs be set to `false`, but this is challenging when compiling to WASM. Therefore, as a temporary solution, this pkg uses a fork of Pico which bypasses a `vk_verification_enabled` check in the `verify` function and assumes it is disabled.
 
@@ -41,6 +42,9 @@ const isValid = verify_stark('PicoPrism', proofBytes, vkBytes);
 const isValid = verify_stark('Pico', proofBytes, vkBytes);
 
 // Verify a Pico 3.1 compress proof: same type again, told apart by its format version
+const isValid = verify_stark('Pico', proofBytes, vkBytes);
+
+// Verify a compress proof in format version 5: the same call
 const isValid = verify_stark('Pico', proofBytes, vkBytes);
 ```
 
@@ -91,6 +95,19 @@ A new guest or a new whitelist needs a new VK, not a new verifier, as long as th
 
 The checks are `pico-verifier`'s, from the [`v3.1.2`](https://github.com/brevis-network/pico/tree/v3.1.2) tag of Pico, without its default features, so the package still builds without C; see `Cargo.toml`.
 
+## Compress proofs, format version 5
+
+Pico 3.2 sends the compress proof in a smaller form, and the VK in a new version. Both keep the `'Pico'` type and the Pico 3.0 magics:
+
+| File | Magic | Version | Body |
+|---|---|---|---|
+| Proof (what the prover submits) | `PICOMLE\0` | 5 | The compress proof alone, its WHIR Merkle openings as multiproofs: the paths of a round's queries share their upper nodes, which travel once. The verifier rebuilds the flat proof and checks it as any other |
+| VK (uploaded for the cluster version) | `PICOMLEV` | 3 | As version 2, except the guest identity: 20 field elements (program commitment, entry pc, and the memory image's commitment and tier) in place of 25 |
+
+The checks are those for Pico 3.1 compress proofs, under Pico 3.2's compress key: `keys/pico-v3.2.0-compress-vk.bin` is `vm/src/mle/shape_vk_bins/mle_compress_vk.bin` at the [`v3.2.0`](https://github.com/brevis-network/pico/tree/v3.2.0) tag of Pico. They are `pico-verifier`'s from that tag, again without its default features; see `Cargo.toml`.
+
+A Pico 3.1 VK does not verify a version 5 proof, and a version 3 VK does not verify a Pico 3.1 proof: a cluster moving to Pico 3.2 uploads a new VK with its new cluster version.
+
 ## Testing
 
 ### Installation
@@ -119,7 +136,7 @@ npm run test:node
 
 This runs the Node.js example that loads the proof and verification key files in `proofs/` and `riscv-vks/` (one per kind of proof) and verifies each of them.
 
-`cargo test` runs the same fixtures natively, and the Pico 3.0 and 3.1 tests also check that tampered proofs, a VK for another guest and a VK that does not cover the proof's key are rejected.
+`cargo test` runs the same fixtures natively, and the Pico 3.0, 3.1 and format version 5 tests also check that tampered proofs, a VK for another guest and a VK that does not cover the proof's key are rejected.
 
 ### Browser Example
 

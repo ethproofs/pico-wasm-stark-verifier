@@ -35,6 +35,13 @@ const CASES = [
     proof: 'pico-mle-compress-eth-proof.bin',
     vk: 'pico-mle-compress-vk-kb.bin',
   },
+  {
+    // 'Pico' as well: the same magic with format version 5, and a version 3 VK.
+    name: 'Pico 3.2 (MLE compress, format version 5)',
+    vmType: 'Pico',
+    proof: 'pico-mle-compress-v5-eth-proof.bin',
+    vk: 'pico-mle-compress-v5-vk-kb.bin',
+  },
 ];
 
 async function testVerification() {

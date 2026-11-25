@@ -4,6 +4,7 @@ use wasm_bindgen::prelude::*;
 mod pico;
 mod pico_mle;
 mod pico_mle_compress;
+mod pico_mle_compress_v5;
 mod pico_prism;
 
 #[wasm_bindgen]
@@ -56,6 +57,13 @@ pub fn verify_stark(
     );
 
     match vm_type {
+        // A compress proof in format version 5 (Pico 3.2): the Pico 3.0 magic again. It
+        // must be asked for before the Pico 3.0 arm, which goes by the magic alone.
+        VMType::Pico if pico_mle_compress_v5::is_compress_proof(proof_bytes) => {
+            let result = pico_mle_compress_v5::verify_proof(proof_bytes, riscv_vk_bytes);
+            console_log!("Pico compress (format version 5) verification result: {result:?}");
+            result
+        }
         // A Pico 3.1 compress proof has the Pico 3.0 magic and format version 4.
         VMType::Pico if pico_mle_compress::is_compress_proof(proof_bytes) => {
             let result = pico_mle_compress::verify_proof(proof_bytes, riscv_vk_bytes);
